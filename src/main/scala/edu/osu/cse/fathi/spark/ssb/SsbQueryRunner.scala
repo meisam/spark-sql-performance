@@ -1,6 +1,6 @@
 package edu.osu.cse.fathi.spark.ssb
 
-import java.io.{PrintWriter, File}
+import java.io.File
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -10,12 +10,14 @@ import org.apache.spark.{SparkConf, SparkContext}
  */
 object SsbQueryRunner {
   def main(args: Array[String]) {
-    val sparkMasterUrl = args(0)
-    val extraJars = Array(args(1))
-    val config = new SparkConf().setMaster(sparkMasterUrl).setAppName("SSB Queries  Format").setJars(extraJars)
-    config.set("spark.worker.memory", "24g").set(
-      "spark.executor.memory", "24g").set(
-        "spark.driver.memory", "4g")
+    val config = new SparkConf().setAppName("SSB Queries")
+    //      .set(
+    //      "spark.worker.memory", "20g").set(
+    //        "spark.executor.memory", "20g").set(
+    //        "spark.driver.memory", "20g")
+    //      .set(
+    //        "spark.driver.maxResultSize", "2G"
+    //      )
     val sc = new SparkContext(config)
     val sqlContext = new SQLContext(sc)
 
