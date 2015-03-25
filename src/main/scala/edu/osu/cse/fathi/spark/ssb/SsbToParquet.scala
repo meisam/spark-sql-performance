@@ -19,7 +19,7 @@ object SsbToParquet {
         "spark.driver.memory", "4g")
     val sc = new SparkContext(config)
     val sqlContext = new SQLContext(sc)
-    import sqlContext.createSchemaRDD
+    import sqlContext.createDataFrame
 
     val homeDir = System.getProperty("user.home")
 
@@ -36,23 +36,23 @@ object SsbToParquet {
         case "customer" =>
           val objectedRdd: RDD[Customer] = rawRDD.map(SsbConversionFunctions.toCustomer)
           val parquetOutputFile = new File(parquetDir, f"00-${tableName}%s.parquet")
-          objectedRdd.saveAsParquetFile(parquetOutputFile.getPath)
+          sqlContext.createDataFrame(objectedRdd).saveAsParquetFile(parquetOutputFile.getPath)
         case "ddate" =>
           val objectedRdd: RDD[DDate] = rawRDD.map(SsbConversionFunctions.toDDate)
           val parquetOutputFile = new File(parquetDir, f"00-${tableName}%s.parquet")
-          objectedRdd.saveAsParquetFile(parquetOutputFile.getPath)
+          sqlContext.createDataFrame(objectedRdd).saveAsParquetFile(parquetOutputFile.getPath)
         case "lineorder" =>
           val objectedRdd: RDD[LineOrder] = rawRDD.map(SsbConversionFunctions.toLineOrder)
           val parquetOutputFile = new File(parquetDir, f"00-${tableName}%s.parquet")
-          objectedRdd.saveAsParquetFile(parquetOutputFile.getPath)
+          sqlContext.createDataFrame(objectedRdd).saveAsParquetFile(parquetOutputFile.getPath)
         case "part" =>
           val objectedRdd: RDD[Part] = rawRDD.map(SsbConversionFunctions.toPart)
           val parquetOutputFile = new File(parquetDir, f"00-${tableName}%s.parquet")
-          objectedRdd.saveAsParquetFile(parquetOutputFile.getPath)
+          sqlContext.createDataFrame(objectedRdd).saveAsParquetFile(parquetOutputFile.getPath)
         case "supplier" =>
           val objectedRdd: RDD[Supplier] = rawRDD.map(SsbConversionFunctions.toSuplier)
           val parquetOutputFile = new File(parquetDir, f"00-${tableName}%s.parquet")
-          objectedRdd.saveAsParquetFile(parquetOutputFile.getPath)
+          sqlContext.createDataFrame(objectedRdd).saveAsParquetFile(parquetOutputFile.getPath)
         case _ => throw new RuntimeException(f"Invalid table name ${tableName}")
       }
     }
