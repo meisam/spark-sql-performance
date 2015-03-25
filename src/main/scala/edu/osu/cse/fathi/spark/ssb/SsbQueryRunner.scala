@@ -144,6 +144,24 @@ object SsbQueryRunner {
                     |order by d_year asc,revenue desc
                     | """.stripMargin),
 
+      ("SSB 0.1 simple scan", """
+                                |select lo_revenue
+                                |from lineorder
+                                | """.stripMargin),
+
+      ("SSB 0.2 simple scan_filter ", """
+                                        |select lo_revenue
+                                        |from lineorder
+                                        |where lo_quantity<25
+                                        | """.stripMargin),
+
+      ("SSB 0.3 one join", """
+                             |select c_city
+                             |from lineorder,customer
+                             |where lo_custkey = c_custkey
+                             |and (c_city = 'UNITED KI1' or c_city = 'UNITED KI5')
+                             | """.stripMargin)
+
       ("SSBQ3.4", """
                     |select c_city,s_city,d_year,sum(lo_revenue) as revenue
                     |from lineorder,customer,supplier,ddate
