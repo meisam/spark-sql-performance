@@ -863,7 +863,7 @@ object SsbQueryRunnerOnSpark {
    * order by d_year,c_nation
    */
   val hand_opt_ssb_4_1 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
@@ -1004,7 +1004,7 @@ object SsbQueryRunnerOnSpark {
    * order by d_year,s_nation, p_category
    */
   val hand_opt_ssb_4_2 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
@@ -1147,7 +1147,7 @@ object SsbQueryRunnerOnSpark {
    * order by d_year,s_city,p_brand1
    */
   val hand_opt_ssb_4_3 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
