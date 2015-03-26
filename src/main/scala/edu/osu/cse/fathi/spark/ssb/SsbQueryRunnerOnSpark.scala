@@ -1,7 +1,6 @@
 package edu.osu.cse.fathi.spark.ssb
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 //PART
@@ -80,7 +79,6 @@ object SsbQueryRunnerOnSpark {
   def main(args: Array[String]) {
     val config = new SparkConf().setAppName("SSB Queries on Spark [Row Format]")
     val sc = new SparkContext(config)
-    val sqlContext = new SQLContext(sc)
 
     if (args.length != 1) {
       Console.print("USAGE: SsbQueryRunnerOnSpark <db home dir>")
