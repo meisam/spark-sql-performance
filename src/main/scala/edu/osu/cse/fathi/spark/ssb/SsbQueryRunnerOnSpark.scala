@@ -129,25 +129,37 @@ object SsbQueryRunnerOnSpark {
    * and lo_quantity<25
    */
   val hand_opt_ssb_1_1 = (sc: SparkContext, dbDir: String) => {
-    val rdd000 = sc.textFile(dbDir + "/lineorder*")
-    val rdd001 = rdd000.map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(5), columns(8).toInt, columns(9).toFloat, columns(11).toInt)
-    })
-    val rdd002 = rdd001.filter(x => ((x._4 >= 1) && (x._4 <= 3) && (x._2 < 25)))
-    val rdd003 = rdd002.map(x => (x._1, x._2 * x._3))
-    val rdd004 = sc.textFile(dbDir + "/ddate*").map(line => {
-      val columns = line.split("\\|")
-      val dateYear = columns(4).toInt
-      if (dateYear == 1993) {
-        (columns(0), columns(0))
+      val dateKey = columns(0).toInt
+      val year = columns(4).toInt
+      if (year == 1993) {
+        (dateKey, 0)
       } else {
         null
       }
     }).filter(_ != null)
-    val rdd009 = rdd003.join(rdd004).map(x => (1, x._2._1))
-    val rdd011 = rdd009.reduceByKey(_ + _)
-    (rdd011, "hand_opt_ssb_1_1")
+
+    val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
+      val columns = line.split("\\|")
+      val orderDate = columns(5).toInt
+      val quantity = columns(8).toInt
+      val extendedPrice = columns(9).toFloat
+      val discount = columns(11).toInt
+      val revenue = extendedPrice * discount
+      (orderDate, (revenue, quantity, discount))
+    })
+
+    val rddLoFilter = rddLo.filter{
+      case (orderDate, (revenue, quantity, discount)) =>
+        (discount >= 1) && (discount <= 3) && (quantity < 25)
+    }
+    val rddLoDate = rddLoFilter.join(rddDate).map{
+      case (orderDate, ((revenue, quantity, discount), zero)) =>
+        (1, revenue)
+    }
+    val rddAggregate = rddLoDate.reduceByKey(_ + _)
+    (rddAggregate, "hand_opt_ssb_1_1")
   }
 
   val ssb_1_1 = (sc: SparkContext, dbDir: String) => {
