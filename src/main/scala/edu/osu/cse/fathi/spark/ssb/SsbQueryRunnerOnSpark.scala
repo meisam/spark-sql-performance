@@ -198,20 +198,20 @@ object SsbQueryRunnerOnSpark {
 
     val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      val oderDate = columns(5).toInt
+      val orderDate = columns(5).toInt
       val quantity = columns(8).toInt
       val extendedPrice = columns(9).toFloat
       val discount = columns(11).toInt
       val revenue = extendedPrice * discount
-      (oderDate, (revenue, quantity, discount))
+      (orderDate, (revenue, quantity, discount))
     })
 
     val rddLoFilter = rddLo.filter{
-      case (oderDate, (revenue, quantity, discount)) =>
+      case (orderDate, (revenue, quantity, discount)) =>
         (discount >= 4 ) && (discount <= 6) && (quantity >= 26) && (quantity <= 35)
     }
     val rddLoDate = rddLoFilter.join(rddDate).map{
-      case (oderDate, ((revenue, quantity, discount), zero)) =>
+      case (orderDate, ((revenue, quantity, discount), zero)) =>
         (1, revenue)
     }
     val rddAggregate = rddLoDate.reduceByKey(_ + _)
@@ -269,20 +269,20 @@ object SsbQueryRunnerOnSpark {
 
     val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      val oderDate = columns(5).toInt
+      val orderDate = columns(5).toInt
       val quantity = columns(8).toInt
       val extendedPrice = columns(9).toFloat
       val discount = columns(11).toInt
       val revenue = extendedPrice * discount
-      (oderDate, (revenue, quantity, discount))
+      (orderDate, (revenue, quantity, discount))
     })
 
     val rddLoFilter = rddLo.filter{
-      case (oderDate, (revenue, quantity, discount)) =>
+      case (orderDate, (revenue, quantity, discount)) =>
         (discount >= 5 ) && (discount <= 7) && (quantity >= 26) && (quantity <= 35)
     }
     val rddLoDate = rddLoFilter.join(rddDate).map{
-      case (oderDate, ((revenue, quantity, discount), zero)) =>
+      case (orderDate, ((revenue, quantity, discount), zero)) =>
         (1, revenue)
     }
     val rddAggregate = rddLoDate.reduceByKey(_ + _)
