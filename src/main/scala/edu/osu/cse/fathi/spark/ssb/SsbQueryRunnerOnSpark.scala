@@ -1199,18 +1199,18 @@ object SsbQueryRunnerOnSpark {
     val rddPart = sc.textFile(dbDir + "/part*").map(line => {
       val columns = line.split("\\|")
       val partKey = columns(0).toInt
-      val partMfgr = columns(2)
+      val partCategory = columns(3)
       val partBrand1 = columns(4)
-      (partKey, (partBrand1, partMfgr))
+      (partKey, (partBrand1, partCategory))
     })
 
     val rddPartFilter = rddPart.filter {
-      case (partKey, (partBrand1, partMfgr)) =>
-        partMfgr == "MFGR#1" || partMfgr == "MFGR#2"
+      case (partKey, (partBrand1, partCategory)) =>
+        partCategory == "MFGR#14"
     }
 
     val rddLoDateSupplierCustomerPart = rddLoDateSupplierCustomer.join(rddPartFilter).map {
-      case (partKey, ((year, supplierNation, profit), (partBrand1, partMfgr))) =>
+      case (partKey, ((year, supplierNation, profit), (partBrand1, partCategory))) =>
         ((year, supplierNation, partBrand1), profit)
     }
 
