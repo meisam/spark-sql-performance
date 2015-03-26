@@ -245,27 +245,38 @@ object SsbQueryRunnerOnSpark {
    * }}
    */
   val hand_opt_ssb_1_3 = (sc: SparkContext, dbDir: String) => {
-
-    val rdd000 = sc.textFile(dbDir + "/lineorder*")
-    val rdd001 = rdd000.map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(5), columns(8).toInt, columns(9).toFloat, columns(11).toInt)
-    })
-    val rdd002 = rdd001.filter(x => ((x._4 >= 5) && (x._4 <= 7) && (x._2 >= 26) && (x._2 <= 35)))
-    val rdd003 = rdd002.map(x => (x._1, x._2 * x._3))
-    val rdd004 = sc.textFile(dbDir + "/ddate*").map(line => {
-      val columns = line.split("\\|")
-      val dateYear = columns(4).toInt
+      val dateKey = columns(0).toInt
+      val year = columns(4).toInt
       val weekNumInYear = columns(11).toInt
-      if ((dateYear == 1994) && (weekNumInYear == 6)) {
-        (columns(0), columns(0))
+      if ((year == 1994) && (weekNumInYear == 6)) {
+        (dateKey, 0)
       } else {
         null
       }
     }).filter(_ != null)
-    val rdd009 = rdd003.join(rdd004).map(x => (1, x._2._1))
-    val rdd012 = rdd009.reduceByKey(_ + _)
-    (rdd012, "hand_opt_ssb_1_3")
+
+    val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
+      val columns = line.split("\\|")
+      val oderDate = columns(5).toInt
+      val quantity = columns(8).toInt
+      val extendedPrice = columns(9).toFloat
+      val discount = columns(11).toInt
+      val revenue = extendedPrice * discount
+      (oderDate, (revenue, quantity, discount))
+    })
+
+    val rddLoFilter = rddLo.filter{
+      case (oderDate, (revenue, quantity, discount)) =>
+        (discount >= 5 ) && (discount <= 7) && (quantity >= 26) && (quantity <= 35)
+    }
+    val rddLoDate = rddLoFilter.join(rddDate).map{
+      case (oderDate, ((revenue, quantity, discount), zero)) =>
+        (1, revenue)
+    }
+    val rddAggregate = rddLoDate.reduceByKey(_ + _)
+    (rddAggregate, "hand_opt_ssb_1_3")
   }
 
   val ssb_1_3 = (sc: SparkContext, dbDir: String) => {
