@@ -87,7 +87,7 @@ object SsbQueryRunnerOnSpark {
     val dbDir = args(0)
 
 
-    val allQueries = Seq[Function2[SparkContext, String, Tuple2[RDD[_], String]]](
+    val allQueries = Seq[(SparkContext, String) => (RDD[_], String)](
       ssb_1_1, hand_opt_ssb_1_1,
       ssb_1_2, hand_opt_ssb_1_2,
       ssb_1_3, hand_opt_ssb_1_3,
