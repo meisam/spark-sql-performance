@@ -98,8 +98,8 @@ object SsbQueryRunnerOnSpark {
         resultRdd.foreachPartition(partition => println("Running the partition"))
         val endTime = System.nanoTime()
         val executionTime = endTime - startTime
-
-        println(f"[PROFILING RESULTS]:${iterationNumber}%d,${queryName}%s,${executionTime}%d")
+        val resultRowCount = resultRdd.count
+        println(f"[PROFILING RESULTS]:${iterationNumber}%d,${queryName}%s,${executionTime}%d,${resultRowCount}%d")
 
       }
     }
