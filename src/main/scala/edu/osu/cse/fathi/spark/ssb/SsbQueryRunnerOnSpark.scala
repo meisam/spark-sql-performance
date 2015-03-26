@@ -87,9 +87,23 @@ object SsbQueryRunnerOnSpark {
     val dbDir = args(0)
 
 
-    val allQueries = Seq[Function2[SparkContext, String, Tuple2[RDD[_], String]]](ssb_1_1, hand_opt_ssb_1_1, ssb_1_2, hand_opt_ssb_1_2, ssb_1_3, hand_opt_ssb_1_3, ssb_2_1, hand_opt_ssb_2_1, ssb_2_2, hand_opt_ssb_2_2, ssb_2_3, hand_opt_ssb_2_3, ssb_3_1, hand_opt_ssb_3_1, ssb_3_2, hand_opt_ssb_3_2, ssb_3_3, hand_opt_ssb_3_3, /* ssb_3_4, */ ssb_4_1, hand_opt_ssb_4_1, ssb_4_2, hand_opt_ssb_4_2, ssb_4_3, hand_opt_ssb_4_3)
-    val ITERATIONS = 5
-    println(f"[PROFILING RESULTS]:ITERATION,QueryName,Exectime")
+    val allQueries = Seq[Function2[SparkContext, String, Tuple2[RDD[_], String]]](
+      ssb_1_1, hand_opt_ssb_1_1,
+      ssb_1_2, hand_opt_ssb_1_2,
+      ssb_1_3, hand_opt_ssb_1_3,
+      ssb_2_1, hand_opt_ssb_2_1,
+      ssb_2_2, hand_opt_ssb_2_2,
+      ssb_2_3, hand_opt_ssb_2_3,
+      ssb_3_1, hand_opt_ssb_3_1,
+      ssb_3_2, hand_opt_ssb_3_2,
+      ssb_3_3, hand_opt_ssb_3_3,
+      // /* ssb_3_4, */
+      ssb_4_1, hand_opt_ssb_4_1,
+      ssb_4_2, hand_opt_ssb_4_2,
+      ssb_4_3, hand_opt_ssb_4_3
+    )
+    val ITERATIONS = 1
+    println(f"[PROFILING RESULTS]:ITERATION,QueryName,Exectime,ResultRowCount")
 
     allQueries.foreach { (query: (SparkContext, String) => (RDD[_], String)) =>
       val (resultRdd: RDD[_], queryName) = query(sc, dbDir)
@@ -115,11 +129,11 @@ object SsbQueryRunnerOnSpark {
    */
   val hand_opt_ssb_1_1 = (sc: SparkContext, dbDir: String) => {
     val rdd000 = sc.textFile(dbDir + "/lineorder*")
-    val rdd001: RDD[(String, Int, Float, Int)] = rdd000.map(line => {
+    val rdd001 = rdd000.map(line => {
       val columns = line.split("\\|")
       (columns(5), columns(8).toInt, columns(9).toFloat, columns(11).toInt)
     })
-    val rdd002: RDD[(String, Int, Float, Int)] = rdd001.filter(x => ((x._4 >= 1) && (x._4 <= 3) && (x._2 < 25)))
+    val rdd002 = rdd001.filter(x => ((x._4 >= 1) && (x._4 <= 3) && (x._2 < 25)))
     val rdd003 = rdd002.map(x => (x._1, x._2 * x._3))
     val rdd004 = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
@@ -130,7 +144,7 @@ object SsbQueryRunnerOnSpark {
         null
       }
     }).filter(_ != null)
-    val rdd009: RDD[(Int, Float)] = rdd003.join(rdd004).map(x => (1, x._2._1))
+    val rdd009 = rdd003.join(rdd004).map(x => (1, x._2._1))
     val rdd011 = rdd009.reduceByKey(_ + _)
     (rdd011, "hand_opt_ssb_1_1")
   }
@@ -173,13 +187,13 @@ object SsbQueryRunnerOnSpark {
   val hand_opt_ssb_1_2 = (sc: SparkContext, dbDir: String) => {
 
     val rdd000 = sc.textFile(dbDir + "/lineorder*")
-    val rdd001: RDD[(String, Int, Float, Int)] = rdd000.map(line => {
+    val rdd001 = rdd000.map(line => {
       val columns = line.split("\\|")
       (columns(5), columns(8).toInt, columns(9).toFloat, columns(11).toInt)
     })
     val rdd002 = rdd001.filter(x => ((x._4 >= 4) && (x._4 <= 6) && (x._2 >= 26) && (x._2 <= 35)))
-    val rdd003: RDD[(String, Float)] = rdd002.map(x => (x._1, x._2 * x._3))
-    val rdd004: RDD[(String, String)] = sc.textFile(dbDir + "/ddate*").map(line => {
+    val rdd003 = rdd002.map(x => (x._1, x._2 * x._3))
+    val rdd004 = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       val dateYearMonth = columns(6)
       if (dateYearMonth == "Jan1994") {
@@ -233,13 +247,13 @@ object SsbQueryRunnerOnSpark {
   val hand_opt_ssb_1_3 = (sc: SparkContext, dbDir: String) => {
 
     val rdd000 = sc.textFile(dbDir + "/lineorder*")
-    val rdd001: RDD[(String, Int, Float, Int)] = rdd000.map(line => {
+    val rdd001 = rdd000.map(line => {
       val columns = line.split("\\|")
       (columns(5), columns(8).toInt, columns(9).toFloat, columns(11).toInt)
     })
     val rdd002 = rdd001.filter(x => ((x._4 >= 5) && (x._4 <= 7) && (x._2 >= 26) && (x._2 <= 35)))
-    val rdd003: RDD[(String, Float)] = rdd002.map(x => (x._1, x._2 * x._3))
-    val rdd004: RDD[(String, String)] = sc.textFile(dbDir + "/ddate*").map(line => {
+    val rdd003 = rdd002.map(x => (x._1, x._2 * x._3))
+    val rdd004 = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       val dateYear = columns(4).toInt
       val weekNumInYear = columns(11).toInt
@@ -291,34 +305,34 @@ object SsbQueryRunnerOnSpark {
    */
 
   val hand_opt_ssb_2_1 = (sc: SparkContext, dbDir: String) => {
-    val rddLo: RDD[(String, (Float, Int, Int))] = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
       (columns(5), (columns(12).toFloat, columns(3).toInt, columns(4).toInt))
     })
-    val rdd003: RDD[(String, Int)] = sc.textFile(dbDir + "/ddate*").map(line => {
+    val rdd003 = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       (columns(0), columns(4).toInt)
     })
-    val rddLoDa: RDD[(String, ((Float, Int, Int), Int))] = rddLo.join(rdd003)
-    val rddLoDaSuPreJoin: RDD[(Int, (Float, Int, Int))] = rddLoDa.map(x => (x._2._1._2, (x._2._1._1, x._2._1._3, x._2._2)))
-    val rddSu: RDD[(Int, String)] = sc.textFile(dbDir + "/supplier*").map(line => {
+    val rddLoDa = rddLo.join(rdd003)
+    val rddLoDaSuPreJoin = rddLoDa.map(x => (x._2._1._2, (x._2._1._1, x._2._1._3, x._2._2)))
+    val rddSu = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(5))
     })
-    val rddSuFilter: RDD[(Int, Int)] = rddSu.filter(x => (x._2 == "AMERICA")).map(x => (x._1, 0))
-    val rddLoDaSu: RDD[(Int, ((Float, Int, Int), Int))] = rddLoDaSuPreJoin.join(rddSuFilter)
-    val rddLoDaSuPaPreJoin: RDD[(Int, (Float, Int))] = rddLoDaSu.map(x => (x._2._1._2, (x._2._1._1, x._2._2)))
-    val rddPart: RDD[(Int, String, String)] = sc.textFile(dbDir + "/part*").map(line => {
+    val rddSuFilter = rddSu.filter(x => (x._2 == "AMERICA")).map(x => (x._1, 0))
+    val rddLoDaSu = rddLoDaSuPreJoin.join(rddSuFilter)
+    val rddLoDaSuPaPreJoin = rddLoDaSu.map(x => (x._2._1._2, (x._2._1._1, x._2._2)))
+    val rddPart = sc.textFile(dbDir + "/part*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(3), columns(4))
     })
     val rddPartFilter = rddPart.filter(x => (x._2 == "MFGR#12"))
-    val rddPartPreJoin: RDD[(Int, String)] = rddPartFilter.map(x => (x._1, x._3))
-    val rddLoDaSuPaJoin: RDD[(Int, ((Float, Int), String))] = rddLoDaSuPaPreJoin.join(rddPartPreJoin)
-    val rddGroupBy: RDD[((Int, String), Float)] = rddLoDaSuPaJoin.map({ case (partKey, ((revenue, year), brand1)) => ((year, brand1), (revenue))})
-    val rddAggregate: RDD[((Int, String), Float)] = rddGroupBy.reduceByKey(_ + _)
-    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddOrderBy, "hand_opt_ssb_2_1")
+    val rddPartPreJoin = rddPartFilter.map(x => (x._1, x._3))
+    val rddLoDaSuPaJoin = rddLoDaSuPaPreJoin.join(rddPartPreJoin)
+    val rddGroupBy = rddLoDaSuPaJoin.map({ case (partKey, ((revenue, year), brand1)) => ((year, brand1), (revenue))})
+    val rddAggregate = rddGroupBy.reduceByKey(_ + _)
+    //    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
+    (rddAggregate, "hand_opt_ssb_2_1")
   }
 
   val ssb_2_1 = (sc: SparkContext, dbDir: String) => {
@@ -374,34 +388,58 @@ object SsbQueryRunnerOnSpark {
    * order by d_year,p_brand1
    */
   val hand_opt_ssb_2_2 = (sc: SparkContext, dbDir: String) => {
-    val rddLo: RDD[(String, (Float, Int, Int))] = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(5), (columns(12).toFloat, columns(3).toInt, columns(4).toInt))
+      val dateKey = columns(0)
+      val year = columns(4).toInt
+      (dateKey, year)
     })
-    val rdd003: RDD[(String, Int)] = sc.textFile(dbDir + "/ddate*").map(line => {
+
+    val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(0), columns(4).toInt)
+      val orderDate = columns(5)
+      val revenue = columns(12).toFloat
+      val partKey = columns(3).toInt
+      val supplierKey = columns(4).toInt
+      (orderDate, (supplierKey, (partKey, revenue)))
     })
-    val rddLoDa: RDD[(String, ((Float, Int, Int), Int))] = rddLo.join(rdd003)
-    val rddLoDaSuPreJoin: RDD[(Int, (Float, Int, Int))] = rddLoDa.map(x => (x._2._1._2, (x._2._1._1, x._2._1._3, x._2._2)))
-    val rddSu: RDD[(Int, String)] = sc.textFile(dbDir + "/supplier*").map(line => {
+    val rddLoDate = rddLo.join(rddDate).map {
+      case (orderDate, ((supplierKey, (partKey, revenue)), year)) =>
+        (supplierKey, (partKey, revenue, year))
+    }
+    val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(5))
+      val supplierKey = columns(0).toInt
+      val supplierRegion = columns(5)
+      (supplierKey, supplierRegion)
     })
-    val rddSuFilter: RDD[(Int, Int)] = rddSu.filter(x => (x._2 == "ASIA")).map(x => (x._1, 0))
-    val rddLoDaSu: RDD[(Int, ((Float, Int, Int), Int))] = rddLoDaSuPreJoin.join(rddSuFilter)
-    val rddLoDaSuPaPreJoin: RDD[(Int, (Float, Int))] = rddLoDaSu.map(x => (x._2._1._2, (x._2._1._1, x._2._2)))
-    val rddPart: RDD[(Int, String, String)] = sc.textFile(dbDir + "/part*").map(line => {
+    val rddSupplierFilter = rddSupplier.filter {
+      case (supplierKey, supplierRegion) => supplierRegion == "ASIA"
+    }
+
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
+      case (supplierKey, ((partKey, revenue, year), supplierRegion))
+      => (partKey, (year, revenue))
+    }
+
+    val rddPart = sc.textFile(dbDir + "/part*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(3), columns(4))
+      val partKey = columns(0).toInt
+      val partCategory = columns(3)
+      val partBrand1 = columns(4)
+      (partKey, (partCategory, partBrand1))
     })
-    val rddPartFilter = rddPart.filter(x => ((x._2 >= "MFGR#2221") && (x._2 <= "MFGR#2228")))
-    val rddPartPreJoin: RDD[(Int, String)] = rddPartFilter.map(x => (x._1, x._3))
-    val rddLoDaSuPaJoin: RDD[(Int, ((Float, Int), String))] = rddLoDaSuPaPreJoin.join(rddPartPreJoin)
-    val rddGroupBy: RDD[((Int, String), Float)] = rddLoDaSuPaJoin.map({ case (partKey, ((revenue, year), brand1)) => ((year, brand1), (revenue))})
-    val rddAggregate: RDD[((Int, String), Float)] = rddGroupBy.reduceByKey(_ + _)
-    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddOrderBy, "hand_opt_ssb_2_2")
+    val rddPartFilter = rddPart.filter {
+      case (partKey, (partCategory, partBrand1)) =>
+        partBrand1 >= "MFGR#2221" && partBrand1 <= "MFGR#2228"
+    }
+    val rddLoDateSupplierPaJoin = rddLoDateSupplier.join(rddPartFilter).map {
+      case (partKey, ((year, revenue), (partCategory, partBrand1))) =>
+        ((year, partBrand1), (revenue))
+    }
+    val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
+    // val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
+    (rddAggregate, "hand_opt_ssb_2_2")
   }
 
   val ssb_2_2 = (sc: SparkContext, dbDir: String) => {
@@ -456,34 +494,58 @@ object SsbQueryRunnerOnSpark {
    * order by d_year,p_brand1
    */
   val hand_opt_ssb_2_3 = (sc: SparkContext, dbDir: String) => {
-    val rddLo: RDD[(String, (Float, Int, Int))] = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(5), (columns(12).toFloat, columns(3).toInt, columns(4).toInt))
+      val dateKey = columns(0)
+      val year = columns(4).toInt
+      (dateKey, year)
     })
-    val rdd003: RDD[(String, Int)] = sc.textFile(dbDir + "/ddate*").map(line => {
+
+    val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(0), columns(4).toInt)
+      val orderDate = columns(5)
+      val revenue = columns(12).toFloat
+      val partKey = columns(3).toInt
+      val supplierKey = columns(4).toInt
+      (orderDate, (supplierKey, (partKey, revenue)))
     })
-    val rddLoDa: RDD[(String, ((Float, Int, Int), Int))] = rddLo.join(rdd003)
-    val rddLoDaSuPreJoin: RDD[(Int, (Float, Int, Int))] = rddLoDa.map(x => (x._2._1._2, (x._2._1._1, x._2._1._3, x._2._2)))
-    val rddSu: RDD[(Int, String)] = sc.textFile(dbDir + "/supplier*").map(line => {
+    val rddLoDate = rddLo.join(rddDate).map {
+      case (orderDate, ((supplierKey, (partKey, revenue)), year)) =>
+        (supplierKey, (partKey, revenue, year))
+    }
+    val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(5))
+      val supplierKey = columns(0).toInt
+      val supplierRegion = columns(5)
+      (supplierKey, supplierRegion)
     })
-    val rddSuFilter: RDD[(Int, Int)] = rddSu.filter(x => (x._2 == "EUROPE")).map(x => (x._1, 0))
-    val rddLoDaSu: RDD[(Int, ((Float, Int, Int), Int))] = rddLoDaSuPreJoin.join(rddSuFilter)
-    val rddLoDaSuPaPreJoin: RDD[(Int, (Float, Int))] = rddLoDaSu.map(x => (x._2._1._2, (x._2._1._1, x._2._2)))
-    val rddPart: RDD[(Int, String, String)] = sc.textFile(dbDir + "/part*").map(line => {
+    val rddSupplierFilter = rddSupplier.filter {
+      case (supplierKey, supplierRegion) => supplierRegion == "EUROPE"
+    }
+
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
+      case (supplierKey, ((partKey, revenue, year), supplierRegion))
+      => (partKey, (year, revenue))
+    }
+
+    val rddPart = sc.textFile(dbDir + "/part*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(3), columns(4))
+      val partKey = columns(0).toInt
+      val partCategory = columns(3)
+      val partBrand1 = columns(4)
+      (partKey, (partCategory, partBrand1))
     })
-    val rddPartFilter = rddPart.filter(x => x._2 == "MFGR#2239")
-    val rddPartPreJoin: RDD[(Int, String)] = rddPartFilter.map(x => (x._1, x._3))
-    val rddLoDaSuPaJoin: RDD[(Int, ((Float, Int), String))] = rddLoDaSuPaPreJoin.join(rddPartPreJoin)
-    val rddGroupBy: RDD[((Int, String), Float)] = rddLoDaSuPaJoin.map({ case (partKey, ((revenue, year), brand1)) => ((year, brand1), (revenue))})
-    val rddAggregate: RDD[((Int, String), Float)] = rddGroupBy.reduceByKey(_ + _)
-    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddOrderBy, "hand_opt_ssb_2_3")
+    val rddPartFilter = rddPart.filter {
+      case (partKey, (partCategory, partBrand1)) =>
+        partBrand1 == "MFGR#2239"
+    }
+    val rddLoDateSupplierPaJoin = rddLoDateSupplier.join(rddPartFilter).map {
+      case (partKey, ((year, revenue), (partCategory, partBrand1))) =>
+        ((year, partBrand1), (revenue))
+    }
+    val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
+    //    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
+    (rddAggregate, "hand_opt_ssb_2_3")
   }
 
   val ssb_2_3 = (sc: SparkContext, dbDir: String) => {
@@ -539,18 +601,27 @@ object SsbQueryRunnerOnSpark {
    * order by d_year asc,revenue desc
    */
   val hand_opt_ssb_3_1 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(4).toInt)
+      val dateKey = columns(0).toInt
+      val year = columns(4).toInt
+      (dateKey, year)
     })
     val rddDateFilter = rddDate.filter { case (dateKey, year) => year >= 1992 && year <= 1997}
 
     val rddLineOrder = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(5).toInt, (columns(4).toInt, columns(2).toInt, columns(12).toFloat))
+      val orderDate = columns(5).toInt
+      val supplierKey = columns(4).toInt
+      val customerKey = columns(2).toInt
+      val revenue = columns(12).toFloat
+      (orderDate, (supplierKey, customerKey, revenue))
     })
-    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((customerKey, supplyKey, revenue), year)) => (supplyKey, (customerKey, year, revenue))}
 
+    val rddLoDate = rddLineOrder.join(rddDateFilter).map {
+      case (key, ((supplierKey, customerKey, revenue), year)) =>
+        (supplierKey, (customerKey, year, revenue))
+    }
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
@@ -563,7 +634,7 @@ object SsbQueryRunnerOnSpark {
       supplierRegion == "ASIA"
     }
 
-    val rddLoDateSupplier: RDD[(Int, (Int, String, Float))] = rddLoDate.join(rddSupplierFilter).map {
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
       case (supplyKey, ((customerKey, year, revenue), (supplierNation, supplierRegion))) =>
         (customerKey, (year, supplierNation, revenue))
     }
@@ -586,11 +657,11 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    val rddSorted: RDD[((String, String, Int), Float)] = rddAggregate.sortBy { case ((customerNation, supplierNation, year), totalRevenue) =>
-      ((year, totalRevenue), customerNation, supplierNation)
-    }
+    //    val rddSorted = rddAggregate.sortBy { case ((customerNation, supplierNation, year), totalRevenue) =>
+    //      ((year, totalRevenue), customerNation, supplierNation)
+    //    }
 
-    (rddSorted, "hand_opt_ssb_3_1")
+    (rddAggregate, "hand_opt_ssb_3_1")
   }
 
   val ssb_3_1 = (sc: SparkContext, dbDir: String) => {
@@ -630,7 +701,7 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum, x._2.map(x => x._4).sum))
+    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
 
     (rdd025, "ssb_3_1")
   }
@@ -664,21 +735,24 @@ object SsbQueryRunnerOnSpark {
       val revenue = columns(12).toFloat
       (orderDate, (supplierKey, customerKey, revenue))
     })
-    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((supplierKey, customerKey, revenue), year)) => (supplierKey, (customerKey, year, revenue))}
 
+    val rddLoDate = rddLineOrder.join(rddDateFilter).map {
+      case (key, ((supplierKey, customerKey, revenue), year)) =>
+        (supplierKey, (customerKey, year, revenue))
+    }
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
       val supplierKey = columns(0).toInt
       val supplierCity = columns(3)
-      val supplierNation = columns(5)
+      val supplierNation = columns(4)
       (supplierKey, (supplierCity, supplierNation))
     })
     val rddSupplierFilter = rddSupplier.filter { case (supplierKey, (supplierCity, supplierNation)) =>
       supplierNation == "UNITED STATES"
     }
 
-    val rddLoDateSupplier: RDD[(Int, (Int, String, Float))] = rddLoDate.join(rddSupplierFilter).map {
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
       case (supplyKey, ((customerKey, year, revenue), (supplierCity, supplierNation))) =>
         (customerKey, (year, supplierCity, revenue))
     }
@@ -701,10 +775,11 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-//    val rddSorted: RDD[((String, String, Int), Float)] = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
-//      ((year, totalRevenue), customerCity, supplierCity)
-//    }
+    //    val rddSorted = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
+    //      ((year, totalRevenue), customerCity, supplierCity)
+    //    }
 
+    (rddAggregate, "hand_opt_ssb_3_2")
   }
 
   val ssb_3_2 = (sc: SparkContext, dbDir: String) => {
@@ -744,7 +819,7 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum, x._2.map(x => x._4).sum))
+    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
     (rdd025, "ssb_3_2")
   }
 
@@ -773,12 +848,15 @@ object SsbQueryRunnerOnSpark {
       val columns = line.split("\\|")
       val orderDate: Int = columns(5).toInt
       val supplierKey: Int = columns(4).toInt
-      val customrKey: Int = columns(2).toInt
+      val customerKey: Int = columns(2).toInt
       val revenue: Float = columns(12).toFloat
-      (orderDate, (supplierKey, customrKey, revenue))
+      (orderDate, (supplierKey, customerKey, revenue))
     })
-    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((supplierKey, customrKey, revenue), year)) => (supplierKey, (customrKey, year, revenue))}
 
+    val rddLoDate = rddLineOrder.join(rddDateFilter).map {
+      case (key, ((supplierKey, customerKey, revenue), year)) =>
+        (supplierKey, (customerKey, year, revenue))
+    }
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
@@ -790,7 +868,7 @@ object SsbQueryRunnerOnSpark {
       supplierCity == "UNITED KI1" || supplierCity == "UNITED KI5"
     }
 
-    val rddLoDateSupplier: RDD[(Int, (Int, String, Float))] = rddLoDate.join(rddSupplierFilter).map {
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
       case (supplyKey, ((customerKey, year, revenue), supplierCity)) =>
         (customerKey, (year, supplierCity, revenue))
     }
@@ -813,10 +891,10 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    val rddSorted: RDD[((String, String, Int), Float)] = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
-      ((year, totalRevenue), customerCity, supplierCity)
-    }
-    (rddSorted, "hand_opt_ssb_3_3")
+    //    val rddSorted = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
+    //      ((year, totalRevenue), customerCity, supplierCity)
+    //    }
+    (rddAggregate, "hand_opt_ssb_3_3")
   }
 
   val ssb_3_3 = (sc: SparkContext, dbDir: String) => {
@@ -921,7 +999,7 @@ object SsbQueryRunnerOnSpark {
         customerRegion == "AMERICA"
     }
 
-    val rddLoDateSupplierCustomer: RDD[(Int, ((Int, String), Float))] = rddLoDateSupplier.join(rddCustomerFilter).map {
+    val rddLoDateSupplierCustomer = rddLoDateSupplier.join(rddCustomerFilter).map {
       case (customerKey, ((partKey, profit, year), (customerNation, customerRegion))) =>
         (partKey, ((year, customerNation), profit))
     }
@@ -933,20 +1011,20 @@ object SsbQueryRunnerOnSpark {
       (partKey, partMfgr)
     })
 
-    val rddPartFilter: RDD[(Int, String)] = rddPart.filter {
+    val rddPartFilter = rddPart.filter {
       case (partKey, partMfgr) =>
         partMfgr == "MFGR#1" || partMfgr == "MFGR#2"
     }
 
     val rddLoDateSupplierCustomerPart = rddLoDateSupplierCustomer.join(rddPartFilter).map {
-      case (partKey, (leftJoinSide, _)) =>
-        leftJoinSide
+      case (partKey, (((year, customerNation), profit), partMfgr)) =>
+        ((year, customerNation), profit)
     }
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    val rddSorted = rddAggregate.sortByKey()
-    (rddSorted, "hand_opt_ssb_4_1")
+    //    val rddSorted = rddAggregate.sortByKey()
+    (rddAggregate, "hand_opt_ssb_4_1")
   }
 
   val ssb_4_1 = (sc: SparkContext, dbDir: String) => {
@@ -1088,8 +1166,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    val rddSorted = rddAggregate.sortByKey()
-    (rddSorted, "hand_opt_ssb_4_2")
+    //    val rddSorted = rddAggregate.sortByKey()
+    (rddAggregate, "hand_opt_ssb_4_2")
   }
 
   val ssb_4_2 = (sc: SparkContext, dbDir: String) => {
@@ -1226,8 +1304,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    val rddSorted = rddAggregate.sortByKey()
-    (rddSorted, "hand_opt_ssb_4_3")
+    //    val rddSorted = rddAggregate.sortBy{case (key, profit) => key}
+    (rddAggregate, "hand_opt_ssb_4_3")
   }
 
   val ssb_4_3 = (sc: SparkContext, dbDir: String) => {
