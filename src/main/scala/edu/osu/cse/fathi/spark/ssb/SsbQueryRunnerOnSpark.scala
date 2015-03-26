@@ -305,32 +305,57 @@ object SsbQueryRunnerOnSpark {
    */
 
   val hand_opt_ssb_2_1 = (sc: SparkContext, dbDir: String) => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
+      val columns = line.split("\\|")
+      val dateKey = columns(0)
+      val year = columns(4).toInt
+      (dateKey, year)
+    })
+
     val rddLo = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(5), (columns(12).toFloat, columns(3).toInt, columns(4).toInt))
+      val orderDate = columns(5)
+      val revenue = columns(12).toFloat
+      val partKey = columns(3).toInt
+      val supplierKey = columns(4).toInt
+      (orderDate, (supplierKey, (partKey, revenue)))
     })
-    val rdd003 = sc.textFile(dbDir + "/ddate*").map(line => {
+    val rddLoDate = rddLo.join(rddDate).map {
+      case (orderDate, ((supplierKey, (partKey, revenue)), year)) =>
+        (supplierKey, (partKey, revenue, year))
+    }
+    val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
-      (columns(0), columns(4).toInt)
+      val supplierKey = columns(0).toInt
+      val supplierRegion = columns(5)
+      (supplierKey, supplierRegion)
     })
-    val rddLoDa = rddLo.join(rdd003)
-    val rddLoDaSuPreJoin = rddLoDa.map(x => (x._2._1._2, (x._2._1._1, x._2._1._3, x._2._2)))
-    val rddSu = sc.textFile(dbDir + "/supplier*").map(line => {
-      val columns = line.split("\\|")
-      (columns(0).toInt, columns(5))
-    })
-    val rddSuFilter = rddSu.filter(x => (x._2 == "AMERICA")).map(x => (x._1, 0))
-    val rddLoDaSu = rddLoDaSuPreJoin.join(rddSuFilter)
-    val rddLoDaSuPaPreJoin = rddLoDaSu.map(x => (x._2._1._2, (x._2._1._1, x._2._2)))
+    val rddSupplierFilter = rddSupplier.filter {
+      case (supplierKey, supplierRegion) => supplierRegion == "AMERICA"
+    }
+
+    val rddLoDateSupplier = rddLoDate.join(rddSupplierFilter).map {
+      case (supplierKey, ((partKey, revenue, year), supplierRegion))
+      => (partKey, (year, revenue))
+    }
+
     val rddPart = sc.textFile(dbDir + "/part*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(3), columns(4))
+      val partKey = columns(0).toInt
+      val partCategory = columns(3)
+      val partBrand1 = columns(4)
+      (partKey, (partCategory, partBrand1))
     })
-    val rddPartFilter = rddPart.filter(x => (x._2 == "MFGR#12"))
-    val rddPartPreJoin = rddPartFilter.map(x => (x._1, x._3))
-    val rddLoDaSuPaJoin = rddLoDaSuPaPreJoin.join(rddPartPreJoin)
-    val rddGroupBy = rddLoDaSuPaJoin.map({ case (partKey, ((revenue, year), brand1)) => ((year, brand1), (revenue))})
-    val rddAggregate = rddGroupBy.reduceByKey(_ + _)
+    val rddPartFilter = rddPart.filter {
+      case (partKey, (partCategory, partBrand1)) =>
+        partCategory == "MFGR#12"
+    }
+    val rddLoDateSupplierPaJoin = rddLoDateSupplier.join(rddPartFilter).map {
+      case (partKey, ((year, revenue), (partCategory, partBrand1))) =>
+        ((year, partBrand1), (revenue))
+    }
+    val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
+
     //    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
     (rddAggregate, "hand_opt_ssb_2_1")
   }
