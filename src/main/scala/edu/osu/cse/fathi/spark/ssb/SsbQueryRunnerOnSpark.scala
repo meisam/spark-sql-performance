@@ -756,7 +756,7 @@ object SsbQueryRunnerOnSpark {
    * order by d_year asc,revenue desc
    */
   val hand_opt_ssb_3_3 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
@@ -776,7 +776,7 @@ object SsbQueryRunnerOnSpark {
       (supplierKey, supplierCity)
     })
     val rddSupplierFilter = rddSupplier.filter { case (supplierKey, supplierCity) =>
-      supplierCity == "UNITED KI1" || supplierCity == "UNITED KI15"
+      supplierCity == "UNITED KI1" || supplierCity == "UNITED KI5"
     }
 
     val rddLoDateSupplier: RDD[(Int, (Int, String, Float))] = rddLoDate.join(rddSupplierFilter).map {
@@ -792,10 +792,10 @@ object SsbQueryRunnerOnSpark {
     })
     val rddCustomerFilter = rddCustomer.filter {
       case (customerKey, customerCity) =>
-        customerCity == "UNITED KI1" || customerCity == "UNITED KI15"
+        customerCity == "UNITED KI1" || customerCity == "UNITED KI5"
     }
 
-    val rddLoDateSupplierCustomer = rddLoDateSupplier.join(rddCustomer).map {
+    val rddLoDateSupplierCustomer = rddLoDateSupplier.join(rddCustomerFilter).map {
       case (customerKey, ((year, supplierCity, revenue), customerCity)) =>
         ((customerCity, supplierCity, year), revenue)
     }
