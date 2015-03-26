@@ -648,17 +648,23 @@ object SsbQueryRunnerOnSpark {
    * order by d_year asc,revenue desc
    */
   val hand_opt_ssb_3_2 = (sc: SparkContext, dbDir: String) => {
-    val rddDate = sc.textFile(dbDir + "/lineorder*").map(line => {
+    val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(4).toInt)
+      val dateKey = columns(0).toInt
+      val year = columns(4).toInt
+      (dateKey, year)
     })
     val rddDateFilter = rddDate.filter { case (dateKey, year) => year >= 1992 && year <= 1997}
 
     val rddLineOrder = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(5).toInt, (columns(4).toInt, columns(2).toInt, columns(12).toFloat))
+      val orderDate = columns(5).toInt
+      val supplierKey = columns(4).toInt
+      val customerKey = columns(2).toInt
+      val revenue = columns(12).toFloat
+      (orderDate, (supplierKey, customerKey, revenue))
     })
-    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((customerKey, supplyKey, revenue), year)) => (supplyKey, (customerKey, year, revenue))}
+    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((supplierKey, customerKey, revenue), year)) => (supplierKey, (customerKey, year, revenue))}
 
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
@@ -695,11 +701,10 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    val rddSorted: RDD[((String, String, Int), Float)] = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
-      ((year, totalRevenue), customerCity, supplierCity)
-    }
+//    val rddSorted: RDD[((String, String, Int), Float)] = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
+//      ((year, totalRevenue), customerCity, supplierCity)
+//    }
 
-    (rddSorted, "hand_opt_ssb_3_2")
   }
 
   val ssb_3_2 = (sc: SparkContext, dbDir: String) => {
@@ -758,15 +763,21 @@ object SsbQueryRunnerOnSpark {
   val hand_opt_ssb_3_3 = (sc: SparkContext, dbDir: String) => {
     val rddDate = sc.textFile(dbDir + "/ddate*").map(line => {
       val columns = line.split("\\|")
-      (columns(0).toInt, columns(4).toInt)
+      val dateKey: Int = columns(0).toInt
+      val year: Int = columns(4).toInt
+      (dateKey, year)
     })
     val rddDateFilter = rddDate.filter { case (dateKey, year) => year >= 1992 && year <= 1997}
 
     val rddLineOrder = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
-      (columns(5).toInt, (columns(4).toInt, columns(2).toInt, columns(12).toFloat))
+      val orderDate: Int = columns(5).toInt
+      val supplierKey: Int = columns(4).toInt
+      val customrKey: Int = columns(2).toInt
+      val revenue: Float = columns(12).toFloat
+      (orderDate, (supplierKey, customrKey, revenue))
     })
-    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((customerKey, supplyKey, revenue), year)) => (supplyKey, (customerKey, year, revenue))}
+    val rddLoDate = rddLineOrder.join(rddDateFilter).map { case (key, ((supplierKey, customrKey, revenue), year)) => (supplierKey, (customrKey, year, revenue))}
 
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
@@ -845,7 +856,7 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum, x._2.map(x => x._4).sum))
+    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
     (rdd025, "ssb_3_3")
   }
 
@@ -882,7 +893,6 @@ object SsbQueryRunnerOnSpark {
       case (key, ((supplierKey, customerKey, partKey, profit), year)) =>
         (supplierKey, (customerKey, partKey, profit, year))
     }
-
 
     val rddSupplier = sc.textFile(dbDir + "/supplier*").map(line => {
       val columns = line.split("\\|")
