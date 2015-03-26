@@ -102,7 +102,7 @@ object SsbQueryRunnerOnSpark {
       ssb_4_2, hand_opt_ssb_4_2,
       ssb_4_3, hand_opt_ssb_4_3
     )
-    val ITERATIONS = 1
+    val ITERATIONS = 20
     println(f"[PROFILING RESULTS]:ITERATION,QueryName,Exectime,ResultRowCount")
 
     allQueries.foreach { (query: (SparkContext, String) => (RDD[_], String)) =>
