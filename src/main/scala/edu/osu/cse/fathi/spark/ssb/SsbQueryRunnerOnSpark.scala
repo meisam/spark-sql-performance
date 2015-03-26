@@ -1008,7 +1008,7 @@ object SsbQueryRunnerOnSpark {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
-    val rddDateFilter = rddDate.filter { case (dateKey, year) => year >= 1992 && year <= 1997}
+    val rddDateFilter = rddDate.filter { case (dateKey, year) => year == 1997 || year == 1998}
 
     val rddLineOrder = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
@@ -1151,7 +1151,7 @@ object SsbQueryRunnerOnSpark {
       val columns = line.split("\\|")
       (columns(0).toInt, columns(4).toInt)
     })
-    val rddDateFilter = rddDate.filter { case (dateKey, year) => year >= 1992 && year <= 1997}
+    val rddDateFilter = rddDate.filter { case (dateKey, year) => year == 1997 || year == 1998}
 
     val rddLineOrder = sc.textFile(dbDir + "/lineorder*").map(line => {
       val columns = line.split("\\|")
