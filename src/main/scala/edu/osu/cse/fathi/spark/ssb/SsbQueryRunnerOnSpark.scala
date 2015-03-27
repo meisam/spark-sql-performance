@@ -390,8 +390,8 @@ object SsbQueryRunnerOnSpark {
     }
     val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
 
-    //    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddAggregate, "hand_opt_ssb_2_1")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_2_1")
   }
 
   val ssb_2_1 = (sc: SparkContext, dbDir: String) => {
@@ -430,8 +430,9 @@ object SsbQueryRunnerOnSpark {
     val rdd021 = rdd019.join(rdd020).map(x => x._2)
     val rdd022 = rdd021.map(x => (x._1._1, x._1._2, x._1._3))
     val rdd023 = rdd022.groupBy(x => (x._1, x._2))
-    val rdd024 = rdd023.map(x => (x._1._1, x._1._2, x._2.map(x => x._3).sum))
-    (rdd024, "ssb_2_1")
+    val rdd024 = rdd023.map(x => ((x._1._1, x._1._2), x._2.map(x => x._3).sum))
+    val rddOrderBy = rdd024.sortByKey(true, 1)
+    (rddOrderBy, "ssb_2_1")
   }
 
   /**
@@ -497,8 +498,8 @@ object SsbQueryRunnerOnSpark {
         ((year, partBrand1), (revenue))
     }
     val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
-    // val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddAggregate, "hand_opt_ssb_2_2")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_2_2")
   }
 
   val ssb_2_2 = (sc: SparkContext, dbDir: String) => {
@@ -537,8 +538,9 @@ object SsbQueryRunnerOnSpark {
     val rdd021 = rdd019.join(rdd020).map(x => x._2)
     val rdd022 = rdd021.map(x => (x._1._1, x._1._2, x._1._3))
     val rdd023 = rdd022.groupBy(x => (x._1, x._2))
-    val rdd024 = rdd023.map(x => (x._1._1, x._1._2, x._2.map(x => x._3).sum))
-    (rdd024, "ssb_2_2")
+    val rdd024 = rdd023.map(x => ((x._1._1, x._1._2), x._2.map(x => x._3).sum))
+    val rddOrderBy = rdd024.sortByKey(true, 1)
+    (rddOrderBy, "ssb_2_2")
   }
 
   /**
@@ -603,8 +605,8 @@ object SsbQueryRunnerOnSpark {
         ((year, partBrand1), (revenue))
     }
     val rddAggregate = rddLoDateSupplierPaJoin.reduceByKey(_ + _)
-    //    val rddOrderBy = rddAggregate.sortBy({ case ((year, brand1), sumRevenue) => (year, brand1)})
-    (rddAggregate, "hand_opt_ssb_2_3")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_2_3")
   }
 
   val ssb_2_3 = (sc: SparkContext, dbDir: String) => {
@@ -643,8 +645,9 @@ object SsbQueryRunnerOnSpark {
     val rdd021 = rdd019.join(rdd020).map(x => x._2)
     val rdd022 = rdd021.map(x => (x._1._1, x._1._2, x._1._3))
     val rdd023 = rdd022.groupBy(x => (x._1, x._2))
-    val rdd024 = rdd023.map(x => (x._1._1, x._1._2, x._2.map(x => x._3).sum))
-    (rdd024, "ssb_2_3")
+    val rdd024 = rdd023.map(x => ((x._1._1, x._1._2), x._2.map(x => x._3).sum))
+    val rddOrderBy = rdd024.sortByKey(true, 1)
+    (rddOrderBy, "ssb_2_3")
   }
 
   /**
@@ -716,11 +719,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortBy { case ((customerNation, supplierNation, year), totalRevenue) =>
-    //      ((year, totalRevenue), customerNation, supplierNation)
-    //    }
-
-    (rddAggregate, "hand_opt_ssb_3_1")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_3_1")
   }
 
   val ssb_3_1 = (sc: SparkContext, dbDir: String) => {
@@ -760,9 +760,10 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
+    val rdd025 = rdd024.map(x => ((x._1._1, x._1._2, x._1._3), x._2.map(x => x._4).sum))
 
-    (rdd025, "ssb_3_1")
+    val rddOrderBy = rdd025.sortByKey(true, 1)
+    (rddOrderBy, "ssb_3_1")
   }
 
   /**
@@ -834,11 +835,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
-    //      ((year, totalRevenue), customerCity, supplierCity)
-    //    }
-
-    (rddAggregate, "hand_opt_ssb_3_2")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_3_2")
   }
 
   val ssb_3_2 = (sc: SparkContext, dbDir: String) => {
@@ -878,8 +876,9 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
-    (rdd025, "ssb_3_2")
+    val rdd025 = rdd024.map(x => ((x._1._1, x._1._2, x._1._3), x._2.map(x => x._4).sum))
+    val rddOrderBy = rdd025.sortByKey(true, 1)
+    (rddOrderBy, "ssb_3_2")
   }
 
   /**
@@ -950,10 +949,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomer.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortBy { case ((customerCity, supplierCity, year), totalRevenue) =>
-    //      ((year, totalRevenue), customerCity, supplierCity)
-    //    }
-    (rddAggregate, "hand_opt_ssb_3_3")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_3_3")
   }
 
   val ssb_3_3 = (sc: SparkContext, dbDir: String) => {
@@ -993,8 +990,9 @@ object SsbQueryRunnerOnSpark {
     val rdd022 = rdd020.join(rdd021).map(x => x._2)
     val rdd023 = rdd022.map(x => (x._1._1, x._1._2, x._2._1, x._1._3))
     val rdd024 = rdd023.groupBy(x => (x._1, x._2, x._3))
-    val rdd025 = rdd024.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => x._4).sum))
-    (rdd025, "ssb_3_3")
+    val rdd025 = rdd024.map(x => ((x._1._1, x._1._2, x._1._3), x._2.map(x => x._4).sum))
+    val rddOrderBy = rdd025.sortByKey(true, 1)
+    (rddOrderBy, "ssb_3_3")
   }
 
   /**
@@ -1082,8 +1080,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortByKey()
-    (rddAggregate, "hand_opt_ssb_4_1")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_4_1")
   }
 
   val ssb_4_1 = (sc: SparkContext, dbDir: String) => {
@@ -1132,8 +1130,9 @@ object SsbQueryRunnerOnSpark {
     val rdd028 = rdd026.join(rdd027).map(x => x._2)
     val rdd029 = rdd028.map(x => (x._1._1, x._1._2, x._1._3, x._1._4))
     val rdd030 = rdd029.groupBy(x => (x._1, x._2))
-    val rdd031 = rdd030.map(x => (x._1._1, x._1._2, x._2.map(x => (x._3 - x._4)).sum))
-    (rdd031, "ssb_4_1")
+    val rdd031 = rdd030.map(x => ((x._1._1, x._1._2), x._2.map(x => (x._3 - x._4)).sum))
+    val rddOrderBy = rdd031.sortByKey(true, 1)
+    (rddOrderBy, "ssb_4_1")
   }
 
   /**
@@ -1225,8 +1224,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortByKey()
-    (rddAggregate, "hand_opt_ssb_4_2")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_4_2")
   }
 
   val ssb_4_2 = (sc: SparkContext, dbDir: String) => {
@@ -1276,8 +1275,9 @@ object SsbQueryRunnerOnSpark {
     val rdd029 = rdd027.join(rdd028).map(x => x._2)
     val rdd030 = rdd029.map(x => (x._1._1, x._1._2, x._2._1, x._1._3, x._1._4))
     val rdd031 = rdd030.groupBy(x => (x._1, x._2, x._3))
-    val rdd032 = rdd031.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => (x._4 - x._5)).sum))
-    (rdd032, "ssb_4_2")
+    val rdd032 = rdd031.map(x => ((x._1._1, x._1._2, x._1._3), x._2.map(x => (x._4 - x._5)).sum))
+    val rddOrderBy = rdd032.sortByKey(true, 1)
+    (rddOrderBy, "ssb_4_2")
   }
 
   /**
@@ -1363,8 +1363,8 @@ object SsbQueryRunnerOnSpark {
 
     val rddAggregate = rddLoDateSupplierCustomerPart.reduceByKey(_ + _)
 
-    //    val rddSorted = rddAggregate.sortBy{case (key, profit) => key}
-    (rddAggregate, "hand_opt_ssb_4_3")
+    val rddOrderBy = rddAggregate.sortByKey(true, 1)
+    (rddOrderBy, "hand_opt_ssb_4_3")
   }
 
   val ssb_4_3 = (sc: SparkContext, dbDir: String) => {
@@ -1414,7 +1414,8 @@ object SsbQueryRunnerOnSpark {
     val rdd028 = rdd026.join(rdd027).map(x => x._2)
     val rdd029 = rdd028.map(x => (x._1._1, x._1._2, x._2._1, x._1._3, x._1._4))
     val rdd030 = rdd029.groupBy(x => (x._1, x._2, x._3))
-    val rdd031 = rdd030.map(x => (x._1._1, x._1._2, x._1._3, x._2.map(x => (x._4 - x._5)).sum))
-    (rdd031, "ssb_4_3")
+    val rdd031 = rdd030.map(x => ((x._1._1, x._1._2, x._1._3), x._2.map(x => (x._4 - x._5)).sum))
+    val rddOrderBy = rdd031.sortByKey(true, 1)
+    (rddOrderBy, "ssb_4_3")
   }
 }
