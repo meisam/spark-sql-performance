@@ -11,7 +11,7 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <scala.version>2.13.4</scala.version>
+    <scala.version>2.13.9</scala.version>
     <scala.organization>org.scala-lang</scala.organization>
     <scala.binary.version>2.11</scala.binary.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
